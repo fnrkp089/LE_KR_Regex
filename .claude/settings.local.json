@@ -1,0 +1,8 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(bun test/range-regex.test.js)",
+      "Bash(node test/range-regex.test.js)"
+    ]
+  }
+}

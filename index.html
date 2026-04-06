@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>라스트 에포크 정규표현식 빌더</title>
+  <meta name="description" content="Last Epoch 한국어 보관함 검색 정규표현식 빌더. Korean stash search regex builder.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div class="container">
+
+    <!-- Header -->
+    <header class="header">
+      <h1>&#9876;&#65039; 라스트 에포크 정규표현식 빌더</h1>
+      <div class="subtitle">Last Epoch Stash Search Regex Builder</div>
+      <div class="lang-toggle" id="langToggle">
+        <button data-lang="ko">한국어</button>
+        <button data-lang="ko+en" class="active">KO+EN</button>
+        <button data-lang="en">EN</button>
+      </div>
+    </header>
+
+    <!-- Output bar -->
+    <div class="output-bar">
+      <div class="regex-display">
+        <span class="regex-text" id="regexText">
+          <span class="regex-placeholder">접사를 클릭하여 정규표현식을 만드세요</span>
+        </span>
+        <span class="char-count" id="charCount">0/30</span>
+      </div>
+      <div class="output-actions">
+        <select id="modeSelect">
+          <option value="regex">Regex 모드</option>
+          <option value="expression">표현식 모드</option>
+        </select>
+        <input type="text" class="macro-input" id="macroInput"
+               placeholder="T7, LP3+..."
+               style="display:none">
+        <button id="clearBtn">초기화</button>
+        <button class="primary" id="copyBtn">복사</button>
+        <span class="copy-feedback" id="copyFeedback">&#10003; 복사됨</span>
+      </div>
+    </div>
+
+    <!-- Search + filters -->
+    <input type="text" class="search-box" id="searchBox"
+           placeholder="&#128269; 접사 검색... (예: 치명타, crit, 방어력)">
+    <div class="filters">
+      <select id="typeFilter">
+        <option value="all">유형: 전체</option>
+        <option value="prefix">접두사</option>
+        <option value="suffix">접미사</option>
+      </select>
+      <select id="equipFilter">
+        <option value="all">장비: 전체</option>
+      </select>
+      <select id="classFilter">
+        <option value="all">직업: 전체</option>
+      </select>
+    </div>
+
+    <!-- Category tabs -->
+    <div class="category-tabs" id="categoryTabs">
+      <button class="active" data-category="all">전체</button>
+    </div>
+
+    <!-- Affix cards -->
+    <div class="affix-list" id="affixList">
+      <div class="loading">데이터 로딩 중...</div>
+    </div>
+
+    <!-- Regex examples -->
+    <div class="section-header" id="examplesHeader">
+      <span class="toggle-icon">&#9660;</span>
+      정규표현식 예제
+    </div>
+    <div id="examplesSection">
+      <div class="example-card" data-regex="/(2[6-9]|30)%.*?이동/">
+        <div class="regex">/(2[6-9]|30)%.*?이동/</div>
+        <div class="desc">&#8594; T7 이동 속도(26-30%) 찾기</div>
+      </div>
+      <div class="example-card" data-regex="/[0-9]+%.*?(냉기|화염|번개) 저항/">
+        <div class="regex">/[0-9]+%.*?(냉기|화염|번개) 저항/</div>
+        <div class="desc">&#8594; 원소 저항 아이템 찾기</div>
+      </div>
+      <div class="example-card" data-regex="/(2[1-6])%.*?체력/">
+        <div class="regex">/(2[1-6])%.*?체력/</div>
+        <div class="desc">&#8594; T7 체력(21-26%) 찾기</div>
+      </div>
+      <div class="example-card" data-regex="/치명타/">
+        <div class="regex">/치명타/</div>
+        <div class="desc">&#8594; 치명타 관련 아이템 찾기</div>
+      </div>
+      <div class="example-card" data-regex="T7&/방어력/">
+        <div class="regex">T7&amp;/방어력/</div>
+        <div class="desc">&#8594; T7 방어력 접사 아이템 찾기</div>
+      </div>
+    </div>
+
+    <!-- Macro reference -->
+    <div class="section-header" id="macroHeader">
+      <span class="toggle-icon">&#9660;</span>
+      매크로 참조
+    </div>
+    <div id="macroSection">
+      <table class="macro-table">
+        <thead>
+          <tr><th>매크로</th><th>한국어</th><th>설명</th><th>숫자</th></tr>
+        </thead>
+        <tbody>
+          <tr><td class="macro-code">LP</td><td>잠재력</td><td>레전더리 잠재력</td><td>&#10003;</td></tr>
+          <tr><td class="macro-code">WW</td><td>직공의 의지</td><td>위버의 의지</td><td>&#10003;</td></tr>
+          <tr><td class="macro-code">FP</td><td>단조력</td><td>단조 잠재력</td><td>&#10003;</td></tr>
+          <tr><td class="macro-code">PT</td><td>잠재 티어</td><td>잠재 티어</td><td>&#10003;</td></tr>
+          <tr><td class="macro-code">T</td><td>접사 티어</td><td>접사 티어</td><td>&#10003;</td></tr>
+          <tr><td class="macro-code">1T-5T</td><td>N개 접사</td><td>N개 접사가 티어 조건 충족</td><td>&#10003;</td></tr>
+          <tr><td class="macro-code">Prefixes</td><td>접두사 수</td><td>접두사 개수</td><td>&#10003;</td></tr>
+          <tr><td class="macro-code">Suffixes</td><td>접미사 수</td><td>접미사 개수</td><td>&#10003;</td></tr>
+          <tr><td class="macro-code">Affixes</td><td>접사 총수</td><td>접사 총 개수</td><td>&#10003;</td></tr>
+          <tr><td class="macro-code">Lvl</td><td>요구 레벨</td><td>요구 레벨</td><td>&#10003;</td></tr>
+          <tr><td class="macro-code">Set</td><td>세트</td><td>세트 아이템</td><td></td></tr>
+          <tr><td class="macro-code">CoF</td><td>운명의 원</td><td>운명의 원</td><td></td></tr>
+          <tr><td class="macro-code">MG</td><td>상인 길드</td><td>상인 길드</td><td></td></tr>
+        </tbody>
+      </table>
+      <div style="margin-top:8px; font-size:11px; color:var(--text-muted);">
+        연산자: <code style="color:var(--gold-primary)">&amp;</code> (AND),
+        <code style="color:var(--gold-primary)">|</code> (OR).
+        정규표현식: <code style="color:var(--gold-primary)">/패턴/</code>으로 감싸기.
+      </div>
+    </div>
+
+    <!-- Footer -->
+    <footer class="footer">
+      데이터 출처: <a href="https://www.lastepochtools.com" target="_blank" rel="noopener">lastepochtools.com</a>
+      &middot;
+      참고: <a href="https://www.lastepoch.re" target="_blank" rel="noopener">lastepoch.re</a>
+    </footer>
+
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>
