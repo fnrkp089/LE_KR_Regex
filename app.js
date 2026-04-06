@@ -13,7 +13,8 @@ const state = {
   data: null,
   allAffixes: [],
   categoryMap: new Map(),
-  expression: '',           // raw output string built by clicking
+  tokens: [],               // array of { type, value } tokens
+  expression: '',           // rendered output string (computed from tokens)
   activeCategory: 'all',
   previousCategory: 'all',
   searchQuery: '',
@@ -182,33 +183,38 @@ function getDisplayName(affix) {
 }
 
 // ─── Expression Building ────────────────────────────────────────
+// Tokens are stored as objects: { type: 'affix', value } or { type: 'macro', value }
+// or { type: 'op', value }. Rendered to a string at output time with smart slash logic.
 
 function appendAffix(statName) {
-  const token = `/${statName}/`;
-  if (state.expression && !state.expression.endsWith('&') && !state.expression.endsWith('|')) {
-    state.expression += '|';
+  const last = state.tokens[state.tokens.length - 1];
+  if (last && last.type !== 'op') {
+    state.tokens.push({ type: 'op', value: '|' });
   }
-  state.expression += token;
+  state.tokens.push({ type: 'affix', value: statName });
   renderOutput();
   renderActiveTab();
 }
 
 function appendMacro(macro) {
-  if (state.expression && !state.expression.endsWith('&') && !state.expression.endsWith('|')) {
-    state.expression += '&';
+  const last = state.tokens[state.tokens.length - 1];
+  if (last && last.type !== 'op') {
+    state.tokens.push({ type: 'op', value: '&' });
   }
-  state.expression += macro;
+  state.tokens.push({ type: 'macro', value: macro });
   renderOutput();
 }
 
 function appendOperator(op) {
-  if (!state.expression) return;
-  if (state.expression.endsWith('&') || state.expression.endsWith('|')) return;
-  state.expression += op;
+  if (state.tokens.length === 0) return;
+  const last = state.tokens[state.tokens.length - 1];
+  if (last.type === 'op') return;
+  state.tokens.push({ type: 'op', value: op });
   renderOutput();
 }
 
 function clearExpression() {
+  state.tokens = [];
   state.expression = '';
   renderOutput();
   renderActiveTab();
@@ -216,7 +222,29 @@ function clearExpression() {
 
 // ─── Output ─────────────────────────────────────────────────────
 
+function buildExpression() {
+  if (state.tokens.length === 0) return '';
+
+  // Raw token from example cards — return as-is
+  if (state.tokens.length === 1 && state.tokens[0].type === 'raw') {
+    return state.tokens[0].value;
+  }
+
+  // Single bare affix — no slashes needed (saves 2 chars)
+  if (state.tokens.length === 1 && state.tokens[0].type === 'affix') {
+    return state.tokens[0].value;
+  }
+
+  // Multiple tokens — wrap affix values in //
+  return state.tokens.map(t => {
+    if (t.type === 'affix') return `/${t.value}/`;
+    return t.value;
+  }).join('');
+}
+
 function renderOutput() {
+  state.expression = buildExpression();
+
   if (!state.expression) {
     dom.regexText.innerHTML = '<span class="regex-placeholder">접사를 클릭하여 정규표현식을 만드세요</span>';
     updateCharCount(0);
@@ -343,8 +371,11 @@ function bindEvents() {
   document.addEventListener('click', (e) => {
     const card = e.target.closest('.example-card');
     if (!card || !card.dataset.regex) return;
+    // Example cards have pre-built expressions — set directly
+    state.tokens = [{ type: 'raw', value: card.dataset.regex }];
     state.expression = card.dataset.regex;
-    renderOutput();
+    dom.regexText.textContent = state.expression;
+    updateCharCount(state.expression.length);
     renderActiveTab();
     // Close guide modal if open
     dom.guideModal.classList.remove('open');
