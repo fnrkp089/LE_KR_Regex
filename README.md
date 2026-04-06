@@ -86,4 +86,3 @@ bun test/range-regex.test.js
 
 - Data: [lastepochtools.com](https://www.lastepochtools.com)
 - Reference: [lastepoch.re](https://www.lastepoch.re)
-- Korean patch: [fnrkp089/lastepoch-kr](https://github.com/fnrkp089/lastepoch-kr)
