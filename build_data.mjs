@@ -22,13 +22,14 @@ function resolve(key) {
   return { ko: ko[key] || '', en: en[key] || '' };
 }
 
-// Class ID → i18n key mapping
-const CLASS_KEYS = {
-  1: 'Common.Class_Sentinel',
-  2: 'Common.Class_Mage',
-  3: 'Common.Class_Primalist',
-  4: 'Common.Class_Acolyte',
-  5: 'Common.Class_Rogue',
+// classSpecificity is a bitmask — each base class occupies one bit.
+// Cross-referenced with displayCategory class buckets (24–28) to confirm mapping.
+const CLASS_BITS = {
+  2:  'Common.Class_Primalist',   // bit 1
+  4:  'Common.Class_Mage',        // bit 2
+  8:  'Common.Class_Sentinel',    // bit 3
+  16: 'Common.Class_Acolyte',     // bit 4
+  32: 'Common.Class_Rogue',       // bit 5
 };
 
 // Resolve category keys to Korean names
@@ -41,27 +42,19 @@ const categoryList = categoryKeys.map(key => {
 });
 
 function getCategoryForAffix(affix) {
-  const groupIndex = affix.group;
-  if (groupIndex != null && groupIndex >= 0 && groupIndex < categoryList.length) {
-    const cat = categoryList[groupIndex];
+  const idx = affix.displayCategory;
+  if (idx != null && idx >= 0 && idx < categoryList.length) {
+    const cat = categoryList[idx];
     if (cat.ko) return cat.ko;
   }
   return '기타';
 }
 
-function isPercentValue(rawValue) {
-  // Raw values < 1 that represent percentages (0.15 = 15%)
-  // Values >= 1 are flat values
-  // Exception: some percentage values are stored as whole numbers
-  // We detect based on whether the value has significant decimals
-  return Math.abs(rawValue) < 1 && rawValue !== 0;
-}
-
-function convertRoll(roll) {
+function convertRoll(roll, forcePercent) {
   const min = roll.min;
   const max = roll.max;
 
-  if (isPercentValue(min) || isPercentValue(max)) {
+  if (forcePercent) {
     return {
       min: Math.round(min * 100),
       max: Math.round(max * 100),
@@ -74,6 +67,20 @@ function convertRoll(roll) {
     max: Math.round(max),
     suffix: '',
   };
+}
+
+// Detect whether an affix's rolls represent percentages by checking
+// the first tier. All tiers share the same format, but higher tiers
+// can exceed 1.0 (e.g., 1.12 = 112%), so per-roll detection fails.
+function detectPercent(tiers) {
+  for (const tier of tiers) {
+    for (const roll of tier.rolls || []) {
+      if (roll.min !== 0 || roll.max !== 0) {
+        return Math.abs(roll.min) < 1 || Math.abs(roll.max) < 1;
+      }
+    }
+  }
+  return false;
 }
 
 function processAffix(id, affix, isMulti) {
@@ -94,13 +101,16 @@ function processAffix(id, affix, isMulti) {
     }
   }
 
-  // Resolve class
+  // Resolve class from bitmask — if exactly one class bit is set, assign
+  // that class; otherwise treat as generic ('전체').
   let classKo = '전체';
   let classEn = 'All';
   if (affix.classSpecificity && affix.classSpecificity !== 0) {
-    const classKey = CLASS_KEYS[affix.classSpecificity];
-    if (classKey) {
-      const cls = resolve(classKey);
+    const matchedBits = Object.keys(CLASS_BITS).filter(
+      bit => affix.classSpecificity & Number(bit)
+    );
+    if (matchedBits.length === 1) {
+      const cls = resolve(CLASS_BITS[matchedBits[0]]);
       classKo = cls.ko || '전체';
       classEn = cls.en || 'All';
     }
@@ -115,19 +125,16 @@ function processAffix(id, affix, isMulti) {
   const tiers = [];
   if (affix.tiers) {
     const rawTiers = affix.tiers;
+    const pct = detectPercent(rawTiers);
     const hasMultipleRollsPerTier = rawTiers.some(t => (t.rolls || []).length > 1);
 
     if (isMulti && !hasMultipleRollsPerTier && rawTiers.length > 7) {
-      // Flattened multiAffix: group every N sequential tiers into one logical tier
-      // N = total raw tiers / expected real tiers
-      // Detect N by finding how many stats this affix has (usually 2 or 3)
-      // Heuristic: the number of stats = rawTiers.length / (number of unique requiredLevel values)
       const uniqueLevels = [...new Set(rawTiers.map(t => t.requiredLevel || 0))];
       const statsPerTier = Math.round(rawTiers.length / uniqueLevels.length);
 
       for (let i = 0; i < rawTiers.length; i += statsPerTier) {
         const group = rawTiers.slice(i, i + statsPerTier);
-        const rolls = group.flatMap(t => (t.rolls || []).map(convertRoll));
+        const rolls = group.flatMap(t => (t.rolls || []).map(r => convertRoll(r, pct)));
         tiers.push({
           tier: tiers.length + 1,
           level: group[0].requiredLevel || 0,
@@ -135,10 +142,9 @@ function processAffix(id, affix, isMulti) {
         });
       }
     } else {
-      // Normal case: each tier already has correct rolls
       for (let i = 0; i < rawTiers.length; i++) {
         const tier = rawTiers[i];
-        const rolls = (tier.rolls || []).map(convertRoll);
+        const rolls = (tier.rolls || []).map(r => convertRoll(r, pct));
         tiers.push({
           tier: i + 1,
           level: tier.requiredLevel || 0,
@@ -209,9 +215,11 @@ if (multiCount < MULTI_MIN || multiCount > MULTI_MAX) {
 affixes.sort((a, b) => a.id - b.id);
 
 // Build categories list (preserving display order from displayCategoryKeys)
+// Only include categories that have at least one affix assigned.
+const usedCategories = new Set(affixes.map(a => a.category));
 const categories = {};
 for (const cat of categoryList) {
-  if (cat.ko) {
+  if (cat.ko && usedCategories.has(cat.ko)) {
     categories[cat.ko] = cat.en;
   }
 }

@@ -407,21 +407,20 @@ function renderTierList(affix) {
     const tierNum = tier.tier;
     const tierClass = `t${Math.min(tierNum, 7)}`;
 
-    for (let ri = 0; ri < tier.rolls.length; ri++) {
-      const roll = tier.rolls[ri];
-      const range = formatRange(roll);
-      const statName = getStatName(affix, ri);
-      const regex = buildTierRegex(roll, statName);
+    // Build combined range + stat text for all rolls in this tier
+    const rollParts = tier.rolls.map(roll => `${formatRange(roll)}`);
+    const firstRoll = tier.rolls[0];
+    const statName = getStatName(affix, 0);
+    const regex = buildTierRegex(firstRoll, statName);
 
-      html += `
-        <div class="tier-row" data-tier="${tierNum}" data-roll-index="${ri}"
-             data-affix-id="${affix.id}">
-          ${ri === 0 ? `<span class="tier-badge ${tierClass}">T${tierNum}</span>` : '<span class="tier-badge"></span>'}
-          <span class="tier-range">${range}</span>
-          <span class="tier-stat">${statName}</span>
-          <span class="tier-regex-preview">${regex}</span>
-        </div>`;
-    }
+    html += `
+      <div class="tier-row" data-tier="${tierNum}" data-roll-index="0"
+           data-affix-id="${affix.id}">
+        <span class="tier-badge ${tierClass}">T${tierNum}</span>
+        <span class="tier-range">${rollParts.join(' / ')}</span>
+        <span class="tier-stat">${statName}</span>
+        <span class="tier-regex-preview">${regex}</span>
+      </div>`;
   }
   html += '</div>';
   return html;
