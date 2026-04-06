@@ -32,34 +32,19 @@
         <span class="char-count" id="charCount">0/30</span>
       </div>
       <div class="output-actions">
-        <select id="modeSelect">
-          <option value="regex">Regex 모드</option>
-          <option value="expression">표현식 모드</option>
-        </select>
-        <input type="text" class="macro-input" id="macroInput"
-               placeholder="T7, LP3+..."
-               style="display:none">
+        <button id="orBtn" title="OR — 하나라도 매칭">또는</button>
+        <button id="andBtn" title="AND — 둘 다 매칭">그리고</button>
         <button id="clearBtn">초기화</button>
         <button class="primary" id="copyBtn">복사</button>
         <span class="copy-feedback" id="copyFeedback">&#10003; 복사됨</span>
       </div>
     </div>
 
-    <!-- Search + filters -->
-    <input type="text" class="search-box" id="searchBox"
-           placeholder="&#128269; 접사 검색... (예: 치명타, crit, 방어력)">
-    <div class="filters">
-      <select id="typeFilter">
-        <option value="all">유형: 전체</option>
-        <option value="prefix">접두사</option>
-        <option value="suffix">접미사</option>
-      </select>
-      <select id="equipFilter">
-        <option value="all">장비: 전체</option>
-      </select>
-      <select id="classFilter">
-        <option value="all">직업: 전체</option>
-      </select>
+    <!-- Search -->
+    <div class="search-row">
+      <input type="text" class="search-box" id="searchBox"
+             placeholder="&#128269; 접사 검색... (예: 치명타, crit, 방어력)">
+      <button class="ref-btn" id="refBtn">프리셋</button>
     </div>
 
     <!-- Category tabs -->
@@ -78,58 +63,84 @@
       정규표현식 예제
     </div>
     <div id="examplesSection">
-      <div class="example-card" data-regex="/(2[6-9]|30)%.*?이동/">
-        <div class="regex">/(2[6-9]|30)%.*?이동/</div>
-        <div class="desc">&#8594; T7 이동 속도(26-30%) 찾기</div>
-      </div>
-      <div class="example-card" data-regex="/[0-9]+%.*?(냉기|화염|번개) 저항/">
-        <div class="regex">/[0-9]+%.*?(냉기|화염|번개) 저항/</div>
-        <div class="desc">&#8594; 원소 저항 아이템 찾기</div>
-      </div>
-      <div class="example-card" data-regex="/(2[1-6])%.*?체력/">
-        <div class="regex">/(2[1-6])%.*?체력/</div>
-        <div class="desc">&#8594; T7 체력(21-26%) 찾기</div>
-      </div>
       <div class="example-card" data-regex="/치명타/">
         <div class="regex">/치명타/</div>
         <div class="desc">&#8594; 치명타 관련 아이템 찾기</div>
       </div>
-      <div class="example-card" data-regex="T7&/방어력/">
-        <div class="regex">T7&amp;/방어력/</div>
+      <div class="example-card" data-regex="/(냉기|화염|번개) 저항/">
+        <div class="regex">/(냉기|화염|번개) 저항/</div>
+        <div class="desc">&#8594; 원소 저항 아이템 찾기</div>
+      </div>
+      <div class="example-card" data-regex="/방어력/&T7">
+        <div class="regex">/방어력/&amp;T7</div>
         <div class="desc">&#8594; T7 방어력 접사 아이템 찾기</div>
+      </div>
+      <div class="example-card" data-regex="/체력/&LP3+">
+        <div class="regex">/체력/&amp;LP3+</div>
+        <div class="desc">&#8594; LP3 이상 + 체력 접사 찾기</div>
       </div>
     </div>
 
-    <!-- Macro reference -->
-    <div class="section-header" id="macroHeader">
-      <span class="toggle-icon">&#9660;</span>
-      매크로 참조
-    </div>
-    <div id="macroSection">
-      <table class="macro-table">
-        <thead>
-          <tr><th>매크로</th><th>한국어</th><th>설명</th><th>숫자</th></tr>
-        </thead>
-        <tbody>
-          <tr><td class="macro-code">LP</td><td>잠재력</td><td>레전더리 잠재력</td><td>&#10003;</td></tr>
-          <tr><td class="macro-code">WW</td><td>직공의 의지</td><td>위버의 의지</td><td>&#10003;</td></tr>
-          <tr><td class="macro-code">FP</td><td>단조력</td><td>단조 잠재력</td><td>&#10003;</td></tr>
-          <tr><td class="macro-code">PT</td><td>잠재 티어</td><td>잠재 티어</td><td>&#10003;</td></tr>
-          <tr><td class="macro-code">T</td><td>접사 티어</td><td>접사 티어</td><td>&#10003;</td></tr>
-          <tr><td class="macro-code">1T-5T</td><td>N개 접사</td><td>N개 접사가 티어 조건 충족</td><td>&#10003;</td></tr>
-          <tr><td class="macro-code">Prefixes</td><td>접두사 수</td><td>접두사 개수</td><td>&#10003;</td></tr>
-          <tr><td class="macro-code">Suffixes</td><td>접미사 수</td><td>접미사 개수</td><td>&#10003;</td></tr>
-          <tr><td class="macro-code">Affixes</td><td>접사 총수</td><td>접사 총 개수</td><td>&#10003;</td></tr>
-          <tr><td class="macro-code">Lvl</td><td>요구 레벨</td><td>요구 레벨</td><td>&#10003;</td></tr>
-          <tr><td class="macro-code">Set</td><td>세트</td><td>세트 아이템</td><td></td></tr>
-          <tr><td class="macro-code">CoF</td><td>운명의 고리</td><td>운명의 고리</td><td></td></tr>
-          <tr><td class="macro-code">MG</td><td>상인 길드</td><td>상인 길드</td><td></td></tr>
-        </tbody>
-      </table>
-      <div style="margin-top:8px; font-size:11px; color:var(--text-muted);">
-        연산자: <code style="color:var(--gold-primary)">&amp;</code> (AND),
-        <code style="color:var(--gold-primary)">|</code> (OR).
-        정규표현식: <code style="color:var(--gold-primary)">/패턴/</code>으로 감싸기.
+    <!-- Macro reference modal -->
+    <div class="modal-overlay" id="refModal">
+      <div class="modal">
+        <div class="modal-header">
+          <span>프리셋</span>
+          <button class="modal-close" id="refModalClose">&times;</button>
+        </div>
+
+        <div class="macro-group">
+          <div class="macro-group-label">연산자</div>
+          <div class="macro-group-desc">
+            <code>&amp;</code> AND (둘 다 매칭) &middot;
+            <code>|</code> OR (하나라도 매칭) &middot;
+            <code>+</code> 이상 (예: T6+ = 6 이상) &middot;
+            <code>-</code> 이하 (예: Lvl50- = 50 이하)
+          </div>
+        </div>
+
+        <div class="macro-group">
+          <div class="macro-group-label">잠재력 (Potential)</div>
+          <div class="macro-btn-row">
+            <button class="macro-btn" data-macro="LP1">LP1</button>
+            <button class="macro-btn" data-macro="LP2">LP2</button>
+            <button class="macro-btn" data-macro="LP3">LP3</button>
+            <button class="macro-btn" data-macro="LP4">LP4</button>
+            <button class="macro-btn" data-macro="LP1+">LP1+</button>
+            <button class="macro-btn" data-macro="LP3+">LP3+</button>
+          </div>
+          <div class="macro-btn-row">
+            <button class="macro-btn" data-macro="WW">WW</button>
+            <button class="macro-btn" data-macro="WW15+">WW15+</button>
+            <button class="macro-btn" data-macro="WW20+">WW20+</button>
+          </div>
+        </div>
+
+        <div class="macro-group">
+          <div class="macro-group-label">티어 (Tier)</div>
+          <div class="macro-btn-row">
+            <button class="macro-btn" data-macro="T5">T5</button>
+            <button class="macro-btn" data-macro="T6">T6</button>
+            <button class="macro-btn" data-macro="T7">T7</button>
+            <button class="macro-btn" data-macro="T5+">T5+</button>
+            <button class="macro-btn" data-macro="T6+">T6+</button>
+          </div>
+          <div class="macro-btn-row">
+            <button class="macro-btn" data-macro="2T7">2T7</button>
+          </div>
+        </div>
+
+        <div class="macro-group">
+          <div class="macro-group-label">진영 (Faction)</div>
+          <div class="macro-btn-row">
+            <button class="macro-btn" data-macro="CoF">CoF</button>
+            <button class="macro-btn" data-macro="MG">MG</button>
+          </div>
+        </div>
+
+        <div class="macro-note">
+          참고: 티어 프리셋(T5+ 등)은 특정 접사가 아닌 아이템의 아무 접사에 적용됩니다
+        </div>
       </div>
     </div>
 

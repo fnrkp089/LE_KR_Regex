@@ -214,6 +214,33 @@ if (multiCount < MULTI_MIN || multiCount > MULTI_MAX) {
 // Sort by ID
 affixes.sort((a, b) => a.id - b.id);
 
+// Compute shortest unique prefix for each affix's stat name.
+// The stat name used for regex is filter_ko || name_ko.
+// The prefix must be unique: no other affix's stat name should *contain* it.
+const allStatNames = [...new Set(affixes.map(a => a.filter_ko || a.name_ko).filter(Boolean))];
+
+function findShortestUnique(name, allNames) {
+  for (let len = 2; len <= name.length; len++) {
+    const prefix = name.slice(0, len);
+    const matches = allNames.filter(n => n.includes(prefix));
+    if (matches.length === 1) return prefix;
+  }
+  return name;
+}
+
+let totalSaved = 0;
+let shortenedCount = 0;
+for (const affix of affixes) {
+  const statName = affix.filter_ko || affix.name_ko;
+  if (!statName) { affix.short_ko = ''; continue; }
+  const short = findShortestUnique(statName, allStatNames);
+  affix.short_ko = short;
+  if (short.length < statName.length) {
+    totalSaved += statName.length - short.length;
+    shortenedCount++;
+  }
+}
+
 // Build categories list (preserving display order from displayCategoryKeys)
 // Only include categories that have at least one affix assigned.
 const usedCategories = new Set(affixes.map(a => a.category));
@@ -263,3 +290,4 @@ console.log(`  Multi affixes:  ${multiCount}`);
 console.log(`  Total:          ${affixes.length}`);
 console.log(`  Categories:     ${Object.keys(categories).length}`);
 console.log(`  Equipment types: ${Object.keys(equipmentTypes).length}`);
+console.log(`  Shortened names: ${shortenedCount} (avg ${Math.round(totalSaved / Math.max(shortenedCount, 1))} chars saved)`);

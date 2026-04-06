@@ -2,7 +2,13 @@
   "permissions": {
     "allow": [
       "Bash(bun test/range-regex.test.js)",
-      "Bash(node test/range-regex.test.js)"
+      "Bash(node test/range-regex.test.js)",
+      "Bash(FILTER_BRANCH_SQUELCH_WARNING=1 git filter-branch:*)",
+      "Bash(git stash:*)",
+      "Bash(git filter-branch --force --env-filter ':*)",
+      "Bash(git push:*)",
+      "Bash(git checkout:*)",
+      "Bash(node:*)"
     ]
   }
 }
