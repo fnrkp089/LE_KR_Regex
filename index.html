@@ -16,10 +16,13 @@
     <header class="header">
       <h1>&#9876;&#65039; 라스트 에포크 정규표현식 빌더</h1>
       <div class="subtitle">Last Epoch Stash Search Regex Builder</div>
-      <div class="lang-toggle" id="langToggle">
-        <button data-lang="ko">한국어</button>
-        <button data-lang="ko+en" class="active">KO+EN</button>
-        <button data-lang="en">EN</button>
+      <div class="header-actions">
+        <div class="lang-toggle" id="langToggle">
+          <button data-lang="ko">한국어</button>
+          <button data-lang="ko+en" class="active">KO+EN</button>
+          <button data-lang="en">EN</button>
+        </div>
+        <button class="guide-btn" id="guideBtn">사용법</button>
       </div>
     </header>
 
@@ -57,31 +60,7 @@
       <div class="loading">데이터 로딩 중...</div>
     </div>
 
-    <!-- Regex examples -->
-    <div class="section-header" id="examplesHeader">
-      <span class="toggle-icon">&#9660;</span>
-      정규표현식 예제
-    </div>
-    <div id="examplesSection">
-      <div class="example-card" data-regex="/치명타/">
-        <div class="regex">/치명타/</div>
-        <div class="desc">&#8594; 치명타 관련 아이템 찾기</div>
-      </div>
-      <div class="example-card" data-regex="/(냉기|화염|번개) 저항/">
-        <div class="regex">/(냉기|화염|번개) 저항/</div>
-        <div class="desc">&#8594; 원소 저항 아이템 찾기</div>
-      </div>
-      <div class="example-card" data-regex="/방어력/&T7">
-        <div class="regex">/방어력/&amp;T7</div>
-        <div class="desc">&#8594; T7 방어력 접사 아이템 찾기</div>
-      </div>
-      <div class="example-card" data-regex="/체력/&LP3+">
-        <div class="regex">/체력/&amp;LP3+</div>
-        <div class="desc">&#8594; LP3 이상 + 체력 접사 찾기</div>
-      </div>
-    </div>
-
-    <!-- Macro reference modal -->
+    <!-- Preset modal -->
     <div class="modal-overlay" id="refModal">
       <div class="modal">
         <div class="modal-header">
@@ -140,6 +119,108 @@
 
         <div class="macro-note">
           참고: 티어 프리셋(T5+ 등)은 특정 접사가 아닌 아이템의 아무 접사에 적용됩니다
+        </div>
+      </div>
+    </div>
+
+    <!-- Guide modal -->
+    <div class="modal-overlay" id="guideModal">
+      <div class="modal modal-lg">
+        <div class="modal-header">
+          <span>사용법</span>
+          <button class="modal-close" id="guideModalClose">&times;</button>
+        </div>
+
+        <div class="guide-section">
+          <h3>이 도구 사용법</h3>
+          <ol class="guide-steps">
+            <li><strong>접사 검색하기</strong> &mdash; 검색창에 원하는 접사를 한국어로 입력합니다 (예: &ldquo;치명타&rdquo;)</li>
+            <li><strong>접사 클릭</strong> &mdash; 검색 결과에서 원하는 접사를 클릭하면 출력 바에 자동으로 추가됩니다</li>
+            <li><strong>조합하기</strong> &mdash; 여러 접사를 조합하려면:<br>
+              첫 번째 접사 클릭 &rarr; <code>또는</code> 또는 <code>그리고</code> 버튼 클릭 &rarr; 두 번째 접사 클릭</li>
+            <li><strong>프리셋 사용</strong> &mdash; 검색창 옆 <code>프리셋</code> 버튼을 눌러 LP, T7 등을 빠르게 추가</li>
+            <li><strong>복사 &amp; 붙여넣기</strong> &mdash; <code>복사</code> 버튼을 눌러 결과를 복사하고, 게임 내 창고 검색창에 붙여넣기</li>
+          </ol>
+        </div>
+
+        <div class="guide-section">
+          <h3>게임 내 창고 검색 문법</h3>
+
+          <h4>기본 검색</h4>
+          <p>창고 검색창에 텍스트를 입력하면 아이템 툴팁에서 해당 텍스트를 찾습니다.</p>
+          <p class="guide-example">예: <code>화염 저항</code> &rarr; 화염 저항이 있는 모든 아이템</p>
+
+          <h4>정규표현식 (Regex)</h4>
+          <p><code>/</code> 로 감싸면 정규표현식으로 검색합니다 (대소문자 무시).</p>
+          <p class="guide-example">예: <code>/치명타/</code> &rarr; &ldquo;치명타&rdquo;가 포함된 모든 아이템</p>
+          <p class="guide-example">예: <code>/화염|냉기|번개/</code> &rarr; 화염, 냉기, 또는 번개가 포함된 아이템</p>
+
+          <h4>프리셋</h4>
+          <ul class="guide-list">
+            <li><code>LP3+</code> &mdash; 잠재력 3 이상인 유니크 아이템</li>
+            <li><code>T7</code> &mdash; T7 접사가 하나라도 있는 아이템</li>
+            <li><code>2T7</code> &mdash; T7 접사가 2개 이상인 아이템 (더블 T7)</li>
+            <li><code>WW20+</code> &mdash; 직공의 의지가 20 이상인 아이템</li>
+            <li><code>CoF</code> &mdash; 운명의 고리 태그가 있는 아이템</li>
+            <li><code>MG</code> &mdash; 상인 길드 태그가 있는 아이템</li>
+          </ul>
+
+          <h4>연산자</h4>
+          <ul class="guide-list">
+            <li><code>&amp;</code> (그리고) &mdash; 양쪽 조건 모두 만족: <code>T7&amp;/치명타/</code></li>
+            <li><code>|</code> (또는) &mdash; 어느 한쪽만 만족: <code>LP3+|WW20+</code></li>
+            <li><code>+</code> (이상) &mdash; 지정한 수 이상: <code>T6+</code> = T6 이상</li>
+            <li><code>-</code> (이하) &mdash; 지정한 수 이하: <code>WW12-</code> = WW 12 이하</li>
+          </ul>
+        </div>
+
+        <div class="guide-section">
+          <h3>실전 예제</h3>
+          <p class="guide-hint">클릭하면 출력 바에 자동으로 입력됩니다</p>
+          <div class="guide-examples">
+            <div class="example-card" data-regex="/치명타 확률/">
+              <div class="regex">/치명타 확률/</div>
+              <div class="desc">치명타 확률 접사가 있는 아이템</div>
+            </div>
+            <div class="example-card" data-regex="T7&/체력/">
+              <div class="regex">T7&amp;/체력/</div>
+              <div class="desc">T7 접사 + 체력이 있는 아이템</div>
+            </div>
+            <div class="example-card" data-regex="LP3+|WW20+">
+              <div class="regex">LP3+|WW20+</div>
+              <div class="desc">잠재력 3+ 유니크 또는 직공의 의지 20+</div>
+            </div>
+            <div class="example-card" data-regex="T7&/화염 저항/">
+              <div class="regex">T7&amp;/화염 저항/</div>
+              <div class="desc">T7 접사 + 화염 저항이 있는 아이템</div>
+            </div>
+            <div class="example-card" data-regex="2T7">
+              <div class="regex">2T7</div>
+              <div class="desc">T7 접사가 2개 이상인 숭고 아이템</div>
+            </div>
+            <div class="example-card" data-regex="/화염|냉기|번개/&/저항/">
+              <div class="regex">/화염|냉기|번개/&amp;/저항/</div>
+              <div class="desc">원소 저항이 있는 아이템</div>
+            </div>
+            <div class="example-card" data-regex="T6+&/방어력/">
+              <div class="regex">T6+&amp;/방어력/</div>
+              <div class="desc">T6 이상 접사 + 방어력이 있는 아이템</div>
+            </div>
+            <div class="example-card" data-regex="CoF&T7">
+              <div class="regex">CoF&amp;T7</div>
+              <div class="desc">운명의 고리 + T7 접사</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="guide-section">
+          <h3>참고사항</h3>
+          <ul class="guide-list guide-notes">
+            <li>프리셋(T7, LP 등)은 <strong>영어</strong>로 입력해야 합니다 &mdash; 게임 엔진이 영어 키워드를 인식합니다</li>
+            <li>접사 검색은 <strong>한국어</strong>로 합니다 &mdash; 한국어 패치 적용 시 툴팁이 한국어이기 때문입니다</li>
+            <li>티어 프리셋(T5+ 등)은 특정 접사가 아닌 아이템의 <strong>아무 접사</strong>에 적용됩니다</li>
+            <li>게임 검색창에는 최대 <strong>30자</strong>까지 입력할 수 있습니다 &mdash; 이 도구는 자동으로 접사 이름을 축약하여 글자 수를 절약합니다</li>
+          </ul>
         </div>
       </div>
     </div>

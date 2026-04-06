@@ -37,8 +37,9 @@ const dom = {
   categoryTabs: $('#categoryTabs'),
   affixList: $('#affixList'),
   langToggle: $('#langToggle'),
-  examplesHeader: $('#examplesHeader'),
-  examplesSection: $('#examplesSection'),
+  guideBtn: $('#guideBtn'),
+  guideModal: $('#guideModal'),
+  guideModalClose: $('#guideModalClose'),
   refBtn: $('#refBtn'),
   refModal: $('#refModal'),
   refModalClose: $('#refModalClose'),
@@ -308,11 +309,15 @@ function bindEvents() {
     renderActiveTab();
   });
 
-  // Collapsible sections
-  dom.examplesHeader.addEventListener('click', () => {
-    dom.examplesHeader.classList.toggle('collapsed');
-    dom.examplesSection.style.display =
-      dom.examplesHeader.classList.contains('collapsed') ? 'none' : '';
+  // Guide modal
+  dom.guideBtn.addEventListener('click', () => {
+    dom.guideModal.classList.add('open');
+  });
+  dom.guideModalClose.addEventListener('click', () => {
+    dom.guideModal.classList.remove('open');
+  });
+  dom.guideModal.addEventListener('click', (e) => {
+    if (e.target === dom.guideModal) dom.guideModal.classList.remove('open');
   });
 
   // Reference modal
@@ -334,17 +339,19 @@ function bindEvents() {
     dom.refModal.classList.remove('open');
   });
 
-  // Example cards: set expression on click
-  for (const card of $$('.example-card')) {
-    card.addEventListener('click', () => {
-      state.expression = card.dataset.regex;
-      renderOutput();
-      renderActiveTab();
-      navigator.clipboard?.writeText(state.expression);
-      dom.copyFeedback.classList.add('show');
-      setTimeout(() => dom.copyFeedback.classList.remove('show'), 1500);
-    });
-  }
+  // Example cards: set expression on click (works in guide modal too)
+  document.addEventListener('click', (e) => {
+    const card = e.target.closest('.example-card');
+    if (!card || !card.dataset.regex) return;
+    state.expression = card.dataset.regex;
+    renderOutput();
+    renderActiveTab();
+    // Close guide modal if open
+    dom.guideModal.classList.remove('open');
+    navigator.clipboard?.writeText(state.expression);
+    dom.copyFeedback.classList.add('show');
+    setTimeout(() => dom.copyFeedback.classList.remove('show'), 1500);
+  });
 }
 
 function setActiveCategory(category) {
