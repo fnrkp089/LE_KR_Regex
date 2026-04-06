@@ -223,6 +223,30 @@ body {
   border-color: var(--gold-secondary);
 }
 
+.op-toggle {
+  display: inline-flex;
+  border: 1px solid rgba(180, 160, 120, 0.2);
+  border-radius: 6px;
+  overflow: hidden;
+  flex-shrink: 0;
+}
+
+.op-toggle button {
+  background: transparent;
+  border: none;
+  color: var(--text-secondary);
+  padding: 6px 12px;
+  font-size: 12px;
+  font-family: var(--font-kr);
+  cursor: pointer;
+  transition: background 0.15s, color 0.15s;
+}
+
+.op-toggle button.active {
+  background: rgba(212, 184, 112, 0.2);
+  color: var(--gold-primary);
+}
+
 .ref-btn {
   background: rgba(180, 160, 120, 0.1);
   border: 1px solid rgba(180, 160, 120, 0.2);

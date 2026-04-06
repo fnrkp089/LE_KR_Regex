@@ -19,6 +19,7 @@ const state = {
   previousCategory: 'all',
   searchQuery: '',
   lang: 'ko+en',
+  defaultOp: '&',           // default operator for affix clicks
 };
 
 // ─── DOM References ─────────────────────────────────────────────
@@ -35,6 +36,7 @@ const dom = {
   copyBtn: $('#copyBtn'),
   copyFeedback: $('#copyFeedback'),
   searchBox: $('#searchBox'),
+  opToggle: $('#opToggle'),
   categoryTabs: $('#categoryTabs'),
   affixList: $('#affixList'),
   langToggle: $('#langToggle'),
@@ -189,7 +191,7 @@ function getDisplayName(affix) {
 function appendAffix(statName) {
   const last = state.tokens[state.tokens.length - 1];
   if (last && last.type !== 'op') {
-    state.tokens.push({ type: 'op', value: '|' });
+    state.tokens.push({ type: 'op', value: state.defaultOp });
   }
   state.tokens.push({ type: 'affix', value: statName });
   renderOutput();
@@ -297,6 +299,15 @@ function bindEvents() {
     btn.classList.add('active');
     state.lang = btn.dataset.lang;
     renderActiveTab();
+  });
+
+  // Operator toggle (default op for affix clicks)
+  dom.opToggle.addEventListener('click', (e) => {
+    const btn = e.target.closest('button[data-op]');
+    if (!btn) return;
+    dom.opToggle.querySelectorAll('button').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    state.defaultOp = btn.dataset.op;
   });
 
   // Operator buttons
